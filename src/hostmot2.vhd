@@ -2852,7 +2852,7 @@ constant UseStepgenProbe: boolean := PinExists(ThePinDesc,StepGenTag,StepGenProb
 		makepktuarttxs: for i in 0 to PktUARTs -1 generate
 			apktuartx:  entity work.pktuartx	
 			generic map (
-				MaxFrameSize => 1024 )
+				MaxFrameSize => 1024*2*16 )
 			port map (
 				clk => clklow,
 				ibus => ibus,
