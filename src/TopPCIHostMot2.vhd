@@ -79,8 +79,8 @@ use work.FixICap.all;
 
 
 -------------------- select one card type------------------------------
-use work.@Card@.all;
---use work.i25_x9card.all; 		-- needs 5i25.ucf and SP6 x9 144 pin
+--use work.@Card@.all;
+use work.i25_x9card.all; 		-- needs 5i25.ucf and SP6 x9 144 pin
 --use work.i74_x9card.all;   	-- needs 4I74.ucf and SP6 x9 144 pin
 --use work.Sixi25_x9card.all;	-- needs 5i25.ucf and SP6 x9 144 pin
 --use work.i24_x16card.all; 	-- needs 5I24.ucf and SP6 x16 256 pin
@@ -90,7 +90,7 @@ use work.@Card@.all;
 
 
 -------------------- select (or add) one pinout -----------------------
-use work.@Pin@.all;
+--use work.@Pin@.all;
 
 -- 34 I/O pinouts for 5I25, 5I26 and 6I25:
 
@@ -138,6 +138,7 @@ use work.@Pin@.all;
 --use work.PIN_C11x2_34.all;				-- CNC4PC C11 BOB
 --use work.PIN_C11Gx2_34.all;				-- CNC4PC C11G BOB
 --use work.PIN_5ABOBx2_34.all;			-- Cheap Ebay 5 Axis BOB
+use work.PIN_5ABOB_laser_34.all;			-- Cheap Ebay 5 Axis BOB with hacklab laser mod
 --use work.PIN_BSTECHx2_34.all;			-- 2x BS Tech 5 axis BOB config
 --use work.PIN_BENEZANx2D_34.all;		-- 2x Benezan triple beast config
 --use work.PIN_Novakonx2_34.all;			-- 2x Novakon 4 axis BOB config
