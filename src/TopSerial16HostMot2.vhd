@@ -70,6 +70,7 @@ use UNISIM.VComponents.all;
 -- 
 -- dont change these:
 use work.IDROMConst.all;	
+use work.FixICap.all;
 
 -------------------- option selection area ----------------------------
 
@@ -143,7 +144,6 @@ entity TopSerialHostMot2 is -- for 7I90HD/7I90DB
 		TheModuleID: ModuleIDType := ModuleID;
 		PWMRefWidth: integer := 13;	-- PWM resolution is PWMRefWidth-1 bits 
 		IDROMType: integer := 3;		
-		UseStepGenPrescaler : boolean := true;
 		UseIRQLogic: boolean := true;
 		UseWatchDog: boolean := true;
 		OffsetToModules: integer := 64;
@@ -215,6 +215,7 @@ signal LocalLEDs : std_logic_vector(1 downto 0);
 signal LEDMode: std_logic;
 signal LEDErrFF: std_logic;
 signal WriteErrLED: std_logic;
+signal WDLBite: std_logic;
 
 signal ReadExtData : std_logic;
 signal WriteExtData : std_logic;
@@ -287,6 +288,19 @@ signal LReadCRC: std_logic;
 signal LWriteCRC: std_logic;
 signal LClearCRC: std_logic;
 
+-- icap signals
+signal ICapO : std_logic_vector(15 downto 0);
+signal ICapI : std_logic_vector(15 downto 0);
+
+signal ICapSel : std_logic;
+signal ICapClk : std_logic;
+signal ICapRW : std_logic;
+signal LoadICapClk : std_logic;
+signal LoadICapRW : std_logic;
+signal LoadICap : std_logic;
+signal ReadICap : std_logic;
+
+
 begin
 
 
@@ -297,7 +311,6 @@ ahostmot2: entity work.HostMot2
 		idromtype  => IDROMType,		
 	   sepclocks  => SepClocks,
 		onews  => OneWS,
-		usestepgenprescaler => UseStepGenPrescaler,
 		useirqlogic  => UseIRQLogic,
 		pwmrefwidth  => PWMRefWidth,
 		usewatchdog  => UseWatchDog,
@@ -328,12 +341,13 @@ ahostmot2: entity work.HostMot2
 		readstb => Read32,
 		writestb => Write32,
 		clklow => procclk,
-		clkmed => procclk,			-- on 7I80 procclk is same as clocklow
+		clkmed => procclk,			-- on 7I90 procclk is same as clocklow
 		clkhigh =>  hm2fastclock,
 --		int => INT, 
 		iobits => IOBITS,			
 		rates => Rates,
-		leds => HM2LEDS	
+		leds => HM2LEDS,	
+      wdlatchedbite => WDLBite 
 
 		);
 
@@ -413,6 +427,21 @@ ahostmot2: entity work.HostMot2
 
   -- End of DCM_inst instantiation
 
+   ICAP_SPARTAN6_inst : ICAP_SPARTAN6
+   generic map (
+      DEVICE_ID => X"2000093",     -- Specifies the pre-programmed Device ID value
+      SIM_CFG_FILE_NAME => "NONE"  -- Specifies the Raw Bitstream (RBT) file to be parsed by the simulation
+                                   -- model
+   )
+   port map (
+--      BUSY => BUSY, 			-- 1-bit output: Busy/Ready output
+      O => ICapO,       		-- 16-bit output: Configuration data output bus
+      CE => '0',   				-- 1-bit input: Active-Low ICAP Enable input
+      CLK => ICapClk,   		-- 1-bit input: Clock input
+      I => ICapI,   				-- 16-bit input: Configuration data input bus
+      WRITE => ICapRW			-- 1-bit input: Read/Write control input
+   );
+
 	asimplspi: entity work.simplespi8
 		generic map
 		(
@@ -454,7 +483,10 @@ ahostmot2: entity work.HostMot2
 
 
 	apktuartrx16: entity work.pktuartr16
-	generic map (MaxFrameSize => 1024) 		-- in bytes (-1) maximum is 2K bytes
+	generic map (
+			MaxFrameSize => 1024,
+			Clock => ClockLow	
+			)
 	port map (
 			clk => procclk,
 			ibus => mobus,
@@ -554,24 +586,48 @@ ahostmot2: entity work.HostMot2
 			wiosel <= '0';
 		end if;
 		
+		if wseladd = x"20" and wiosel = '1' and mwrite = '1' then
+			LoadICap <= '1';
+		else
+			LoadICap <= '0';		
+		end if;	
+
 		if rseladd = x"20" and riosel = '1' then
+			ReadICap <= '1';
+		else
+			ReadIcap <= '0';		
+		end if;	
+
+		if wseladd = x"21" and wiosel = '1' and mwrite = '1' then
+			LoadICapClk <= '1';
+		else
+			LoadICapClk <= '0';		
+		end if;	
+
+		if wseladd = x"22" and wiosel = '1' and mwrite = '1' then
+			LoadICapRW <= '1';
+		else
+			LoadICapRW <= '0';		
+		end if;			
+		
+		if rseladd = x"23" and riosel = '1' then
 			LReadCRC <= '1';
 		else
 			LReadCRC <= '0';		
 		end if;	
 
-		if wseladd = x"20" and wiosel = '1' and mwrite = '1' then
+		if wseladd = x"23" and wiosel = '1' and mwrite = '1' then
 			LWriteCRC <= '1';
 		else
 			LWriteCRC <= '0';		
 		end if;	
 
-		if wseladd = x"21" and wiosel = '1' and mwrite = '1' then
+		if wseladd = x"24" and wiosel = '1' and mwrite = '1' then
 			LClearCRC<= '1';
 		else
 			LClearCRC<= '0';		
 		end if;	
-		
+
 		if rseladd = x"30" and riosel = '1' then
 			ReadPktUARTRData <= '1';
 		else
@@ -1001,8 +1057,28 @@ ahostmot2: entity work.HostMot2
 		else
 			RECONFIG <= 'Z';
 		end if;
+	end process;		
+	
+	ICapSupport: process (procclk,ReadICap,LoadICap)
+	begin
+		if rising_edge(procclk) then
+			if LoadICap = '1' then
+				ICapI <= FixIcap(mobus);
+--				ICapI <= mobus;
+			end if;
+			if LoadICapRW= '1' then
+				ICapRW <= mobus(0);
+			end if;	
+			if LoadICapClk= '1' then
+				ICapClk <= mobus(0);
+			end if;	
+		end if;		
+		mibus_io <= "ZZZZZZZZZZZZZZZZ";
+		if ReadICap= '1' then
+			mibus_io <= FixICap(ICapO);
+--			mibus_io <= ICapO;
+		end if;
 	end process;	
-
 		
 	dofallback: if fallback generate -- do blinky red light to indicate failure to load primary bitfile
 		Fallbackmode : process(procclk)
@@ -1018,7 +1094,7 @@ ahostmot2: entity work.HostMot2
 		NormalMode : process(LEDErrFF)
 		begin
 --			NINIT <= 'Z';
-			NINIT <= not LEDErrFF;
+			NINIT <= (not LEDErrFF) and (not WDLBite);
 		end process;	
 	end generate;		
 		

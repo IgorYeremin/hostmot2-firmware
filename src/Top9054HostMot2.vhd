@@ -91,10 +91,11 @@ use work.@Card@.all;
 -----------------------------------------------------------------------
 
 
--------------------- select (or add) one pinout ---------------------------------
+-------------------- select (or add) one pinout -----------------------------------
 use work.@Pin@.all;
 -- 64 I/O pinouts for the 5I21
 -- use work.PIN_STUA8_4_64.all; 
+--use work.PIN_BI8_QE3_64.all; 
 
 -- 72 I/O pinouts for 4I68, 4I69, 5I23:
 --use work.PIN_SVST8_4IM2_72.all;
@@ -119,16 +120,18 @@ use work.@Pin@.all;
 --use work.PIN_SVUA8_8_72.all; -- 7I44 pinout UARTS
 --use work.PIN_DA2_72.all;
 --use work.PIN_SVST4_8_ADO_72.all;
+--use work.PIN_7I76_ADO_72.all;
 --use work.PIN_SVSS8_8_72.all;
 --use work.PIN_SSSVST8_8_8_72.all;
 --use work.PIN_SVSS6_6_72.all;
+--use work.PIN_SVSSST10_6_6_72.all;
 --use work.PIN_SVST6_6_7I52S_72.all;
 --use work.PIN_SVSSST6_6_12_72.all;
 --use work.PIN_SVSS6_8_72.all;
 --use work.PIN_SSSVST8_1_5_7I47_72.all;
 --use work.PIN_SVSS8_44_72.all;
 --use work.PIN_RMSVSS6_8_72.all;
---use work.PIN_RMSVSS6_12_8_72.all; -- 4i69 5i24 only
+--use work.PIN_RMSVSS6_12_8_72.all; -- 4i69 5i24 7I80 only
 --use work.PIN_RMSVSS6_10_8_72.all;
 --use work.PIN_ST8_PLASMA_72.all;
 --use work.PIN_SV4_7I47S_72.all;
@@ -139,6 +142,8 @@ use work.@Pin@.all;
 --use work.PIN_SSSV10_12_72.all;
 --use work.PIN_SVSS12_6_7I48_7I52_72.all;
 --use work.PIN_SVTP6_2_7I52S_72.all;
+--use work.PIN_RMSVSS6_6_6_7I49_7I52_72.all;
+
 -- custom and special
 --use work.PIN_FA1_72.all;
 --use work.PIN_MIKA2_CPR_72.all;
@@ -175,6 +180,7 @@ use work.@Pin@.all;
 --use work.PIN_4x7I65_96.all;
 --use work.PIN_3x7I65_1x7I44_96.all;
 --use work.PIN_SVST10_6_7I49_7I33_7I47_96.all;
+--use work.PIN_SVST2_4_7I47_96.all;
 
 --custom and special
 --use work.PIN_SVSS8_3_96.all;
@@ -201,7 +207,6 @@ entity Top9054HostMot2 is  -- for 5I21, 5I22, 5I23, 4I68, 4I69 PCI9054 based car
 		TheModuleID: ModuleIDType := ModuleID;
 		PWMRefWidth: integer := 13;		-- PWM resolution is PWMRefWidth-1 bits, MSB is for symmetrical mode 
 		IDROMType: integer := 3;		
-		UseStepGenPrescaler : boolean := true;
 		UseIRQLogic: boolean := true;
 		UseWatchDog: boolean := true;
 		OffsetToModules: integer := 64;
@@ -322,6 +327,8 @@ begin
 
   -- End of DCM_inst instantiation
 
+-- clkmed (usually embedded processor clock 
+-- Note that this could be 100 MHZ for 4I69s with a ifdef
 -- CLK multiplier DCM signals
 
   ClockMult1 : DCM						-- This takes LCLK and multiplies it by 3/2 for 72/75 MHz ClockMed  
@@ -367,7 +374,6 @@ ahostmot2: entity work.HostMot2
 		idromtype  => IDROMType,		
 	   sepclocks  => SepClocks,
 		onews  => OneWS,
-		usestepgenprescaler => UseStepGenPrescaler,
 		useirqlogic  => UseIRQLogic,
 		pwmrefwidth  => PWMRefWidth,
 		usewatchdog  => UseWatchDog,
@@ -468,6 +474,7 @@ ahostmot2: entity work.HostMot2
 	Is5I2x: if (BoardNameHigh = BoardName5I22) or (BoardNameHigh = BoardName5I23) generate  
 		DoHandshake: process (HOLD,DemandMode, LDREQ)
 		begin
+			report "This is a 5I22 or 5I23 config";
 			HOLDA <= HOLD;
 			CCS <= '1';
 			DISABLECONF <= DemandMode;
@@ -479,6 +486,7 @@ ahostmot2: entity work.HostMot2
 	Is4I68: if (BoardNameHigh = BoardName4I68)  generate	-- because the standard 4I68 does not have CCS connected
 		DoHandshake: process (HOLD,DemandMode, LDREQ)
 		begin
+			report "This is a 4I68 config";
 			HOLDA <= HOLD;
 			if DemandMode = '1' then
 				DISABLECONF <= '1';
@@ -493,6 +501,7 @@ ahostmot2: entity work.HostMot2
 	Is5I21: if (BoardNameHigh = BoardName5I21)  generate	-- just like 4I68 but 5I21 has CCS
 		DoHandshake: process (HOLD,DemandMode, LDREQ)
 		begin
+			report "This is a 5I21 config";
 			HOLDA <= HOLD;
 			CCS <= '1';
 			if DemandMode = '1' then
@@ -508,6 +517,7 @@ ahostmot2: entity work.HostMot2
 	Is4I69: if (BoardNameHigh = BoardName4I69)  generate	
 		DoHandshake: process (HOLD,DemandMode, LDREQ)
 		begin
+			report "This is a 4I69 config";
 			HOLDA <= HOLD;
 			CCS <= '1';
 			DISABLECONF <= DemandMode;
@@ -519,6 +529,7 @@ ahostmot2: entity work.HostMot2
 	Is3X20: if (BoardNameHigh = BoardName3X20) generate	-- because 3X20 does not have DISABLECONF connected
 		DoHandshake: process (HOLD, LDREQ) -- 3X20 has no DISABLECONF
 		begin
+			report "This is a 3X20 config";
 			HOLDA <= HOLD;
 			CCS <= '1';
 			BTERM <= '1';

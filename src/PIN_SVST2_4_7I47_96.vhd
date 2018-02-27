@@ -72,7 +72,7 @@ use work.IDROMConst.all;
 package PIN_SVST2_4_7I47_96 is
 	constant ModuleID : moduleIDType :=( 
 		(WatchDogTag,	x"00",	ClockLowTag,	x"01",	WatchDogTimeAddr&PadT,		WatchDogNumRegs,		x"00",	WatchDogMPBitMask),
-		(IOPortTag,		x"00",	ClockLowTag,	x"03",	PortAddr&PadT,					IOPortNumRegs,			x"00",	IOPortMPBitMask),
+		(IOPortTag,		x"00",	ClockLowTag,	x"04",	PortAddr&PadT,					IOPortNumRegs,			x"00",	IOPortMPBitMask),
 		(QcountTag,		x"02",	ClockLowTag,	x"04",	QcounterAddr&PadT,			QCounterNumRegs,		x"00",	QCounterMPBitMask),
 		(PWMTag,			x"00",	ClockHighTag,	x"02",	PWMValAddr&PadT,				PWMNumRegs,				x"00",	PWMMPBitMask),
 		(StepGenTag,	x"02",	ClockLowTag,	x"04",	StepGenRateAddr&PadT,		StepGenNumRegs,		x"00",	StepGenMPBitMask),
@@ -131,8 +131,7 @@ package PIN_SVST2_4_7I47_96 is
 		IOPortTag & x"00" & PWMTag  & PWMBDirPin,				-- I/O 21
 		IOPortTag & x"01" & PWMTag  & PWMAOutPin,				-- I/O 22			
 		IOPortTag & x"01" & PWMTag  & PWMBDirPin,				-- I/O 23
-					
-					
+										
 		IOPortTag & x"00" & NullTag & x"00",					-- I/O 24
 		IOPortTag & x"00" & NullTag & x"00",					-- I/O 25
 		IOPortTag & x"00" & NullTag & x"00",					-- I/O 26

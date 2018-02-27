@@ -185,7 +185,7 @@ package PIN_SVST4_8_I90_72 is
 		IOPortTag & x"07" & StepGenTag & x"85",   	-- I/O 70
 		IOPortTag & x"07" & StepGenTag & x"86",   	-- I/O 71
 		
-		-- 4I90 specific local I/O	Note Local I/O starts after external I/O
+		-- 7I90 specific local I/O	Note Local I/O starts after external I/O
 		LIOPortTag & x"00" & UARTRTag & URDataPin,	-- LI/O 0 = UART RX
 		LIOPortTag & x"00" & UARTTTag & UTDataPin,   -- LI/O 1 = UART TX
 		LIOPortTag & x"00" & UARTTTag & UTDrvEnPin,	-- LI/O 2 = UART TXEN

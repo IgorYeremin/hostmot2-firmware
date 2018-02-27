@@ -129,7 +129,6 @@ entity TopUSBHostMot2 is -- for 7I43/7I61 in USB mode
 		TheModuleID: ModuleIDType := ModuleID;
 		PWMRefWidth: integer := 13;	-- PWM resolution is PWMRefWidth-1 bits 
 		IDROMType: integer := 3;		
-		UseStepGenPrescaler : boolean := true;
 		UseIRQLogic: boolean := true;
 		UseWatchDog: boolean := true;
 		OffsetToModules: integer := 64;
@@ -254,7 +253,6 @@ ahostmot2: entity work.HostMot2
 		idromtype  => IDROMType,		
 	   sepclocks  => SepClocks,
 		onews  => OneWS,
-		usestepgenprescaler => UseStepGenPrescaler,
 		useirqlogic  => UseIRQLogic,
 		pwmrefwidth  => PWMRefWidth,
 		usewatchdog  => UseWatchDog,
