@@ -67,7 +67,7 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 --     POSSIBILITY OF SUCH DAMAGE.
 -- 
 -------------------------------------------------------------------------------
--- 16 bit Harvard Arch accumulator oriented processor ~490 slices: 
+-- 16 bit Harvard Arch accumulator oriented processor ~135 S6 slices: 
 -- 1 clk/inst, only exception is conditional jumps:
 -- 1 clock if not taken, 3 clocks if taken
 -- ~100 MHz operation in Spartan6
@@ -157,33 +157,33 @@ architecture Behavioral of D16w is
   
 -- accumulator operate type							-- 0IXXXXh	
 
-  constant rotcl : std_logic_vector (3 downto 0) := x"4";
-  constant rotcr : std_logic_vector (3 downto 0) := x"5";
-  constant bswp  : std_logic_vector (3 downto 0) := x"6";
-  constant sxb   : std_logic_vector (3 downto 0) := x"7";
-  constant ldph  : std_logic_vector (3 downto 0) := x"8";
+  constant rotcl : std_logic_vector (3 downto 0) := x"4"; 	-- rotate through carry left
+  constant rotcr : std_logic_vector (3 downto 0) := x"5"; 	-- rotate through carry right
+  constant bswp  : std_logic_vector (3 downto 0) := x"6";	-- byte swap
+  constant sxb   : std_logic_vector (3 downto 0) := x"7";	-- sign extend byte
+  constant ldph  : std_logic_vector (3 downto 0) := x"8";	-- load product high part
   
-  constant ashr   : std_logic_vector (3 downto 0) := x"B";
+  constant ashr   : std_logic_vector (3 downto 0) := x"B";	-- arithmatic shift right
   
 -- index register load/store in address order 	-- 8IXXXXh
-  constant ldx   : std_logic_vector (3 downto 0) := x"0";
-  constant ldy   : std_logic_vector (3 downto 0) := x"1";
-  constant ldz   : std_logic_vector (3 downto 0) := x"2";
-  constant ldt   : std_logic_vector (3 downto 0) := x"3";
-  constant stx   : std_logic_vector (3 downto 0) := x"4";
-  constant sty   : std_logic_vector (3 downto 0) := x"5";
-  constant stz   : std_logic_vector (3 downto 0) := x"6";
-  constant stt   : std_logic_vector (3 downto 0) := x"7";
-  constant addix : std_logic_vector (3 downto 0) := x"8";
-  constant addiy : std_logic_vector (3 downto 0) := x"9";
-  constant addiz : std_logic_vector (3 downto 0) := x"A";
-  constant addit : std_logic_vector (3 downto 0) := x"B";
+  constant ldx   : std_logic_vector (3 downto 0) := x"0";	-- load acc from X
+  constant ldy   : std_logic_vector (3 downto 0) := x"1";	-- load acc from Y	
+  constant ldz   : std_logic_vector (3 downto 0) := x"2";	-- load acc from Z
+  constant ldt   : std_logic_vector (3 downto 0) := x"3";	-- load acc from T
+  constant stx   : std_logic_vector (3 downto 0) := x"4";	-- store acc to X
+  constant sty   : std_logic_vector (3 downto 0) := x"5";	-- store acc to Y
+  constant stz   : std_logic_vector (3 downto 0) := x"6";	-- store acc to Z
+  constant stt   : std_logic_vector (3 downto 0) := x"7";	-- store acc to T
+  constant addix : std_logic_vector (3 downto 0) := x"8";	-- add immediate to X
+  constant addiy : std_logic_vector (3 downto 0) := x"9";	-- add immediate to Y
+  constant addiz : std_logic_vector (3 downto 0) := x"A";	-- add immediate to Z
+  constant addit : std_logic_vector (3 downto 0) := x"B";	-- add immediate to T
   
 -- return register save/restore						-- 8IXXXXh
-  constant pop   : std_logic_vector (3 downto 0) := x"C";	
-  constant push  : std_logic_vector (3 downto 0) := x"D";
-  constant ldsp  : std_logic_vector (3 downto 0) := x"E";
-  constant stsp  : std_logic_vector (3 downto 0) := x"F";
+  constant pop   : std_logic_vector (3 downto 0) := x"C";	-- pop top of stack to accum
+  constant push  : std_logic_vector (3 downto 0) := x"D";	--	push accum on stack
+  constant ldsp  : std_logic_vector (3 downto 0) := x"E";	--	load acc from stack pointer
+  constant stsp  : std_logic_vector (3 downto 0) := x"F";	-- store acc to stack pointer
   
 -- basic signals
 
@@ -339,7 +339,6 @@ begin  -- the CPU
 		wbena3 <= wbena2;									-- determines writeback suitable instructions
 		opcode3 <= opcode2;								-- for late decode of STA
 		if reset = '1' or ((opcode2 = jmpc) and (jumpq = '1')) then
---		if reset = '1'  then
 			id1  <= (others => '0');                -- on reset or taken conditional jump
 			id2  <= (others => '0');					 -- fill inst pipeline with two 0s (nop)
       end if;
@@ -455,9 +454,9 @@ begin  -- the CPU
 		
 			if Arith = "11" then
 				if Minus = '0' then
-					accumcar <= '0'&accum + oprr + maskedcarry; -- add/addc
+					accumcar <= ('0'&accum) + ('0'&oprr) + (x"0000"&maskedcarry); -- add/addc
 				else
-					accumcar <= '0'&accum - oprr - maskedcarry; -- sub/subc
+					accumcar <= ('0'&accum) - ('0'&oprr) - (x"0000"&maskedcarry); -- sub/subc
 				end if;
 			end if;	
 

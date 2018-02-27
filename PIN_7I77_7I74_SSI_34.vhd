@@ -75,7 +75,7 @@ package PIN_7I77_7I74_SSI_34 is
 		(IOPortTag,		x"00",	ClockLowTag,	x"02",	PortAddr&PadT,					IOPortNumRegs,			x"00",	IOPortMPBitMask),
 		(MuxedQcountTag,		MQCRev,	ClockLowTag,	x"06",	MuxedQcounterAddr&PadT,		MuxedQCounterNumRegs,x"00",	MuxedQCounterMPBitMask),
 		(MuxedQCountSelTag,	x"00",	ClockLowTag,	x"01",	NullAddr&PadT,					x"00",					x"00",	x"00000000"),
-		(SSSITag,		x"00",	ClockLowTag,	x"08",	SSSIDataAddr&PadT,			SSSINumRegs,			x"00",	SSSIMPBitMask),
+		(SSSITag,		x"00",	ClockLowTag,	x"08",	SSSIDataAddr0&PadT,			SSSINumRegs,			x"00",	SSSIMPBitMask),
 		(SSerialTag,	x"00",	ClockLowTag,	x"01",	SSerialCommandAddr&PadT,	SSerialNumRegs,		x"10",	SSerialMPBitMask),
 		(LEDTag,			x"00",	ClockLowTag,	x"01",	LEDAddr&PadT,					LEDNumRegs,				x"00",	LEDMPBitMask),
 		(NullTag,		x"00",	NullTag,			x"00",	NullAddr&PadT,					x"00",					x"00",	x"00000000"),
@@ -143,7 +143,7 @@ package PIN_7I77_7I74_SSI_34 is
 		IOPortTag & x"05" & SSSITag  & SSSIClkPin, 						-- I/O 30	PIN 19	PIN 10
 		IOPortTag & x"06" & SSSITag  & SSSIClkPin, 						-- I/O 31	PIN 21	PIN 11
 		IOPortTag & x"07" & SSSITag  & SSSIClkPin, 						-- I/O 32	PIN 23	PIN 12
-		IOPortTag & x"00" & NullTag & x"00", 		 						-- I/O 33	PIN 25	PIN 13
+		IOPortTag & x"07" & SSSITag  & SSSIClkEnPin,						-- I/O 33	PIN 25	PIN 13
 
 		emptypin,emptypin,emptypin,emptypin,emptypin,emptypin,emptypin,emptypin, -- added for 34 pin 5I25
 		emptypin,emptypin,emptypin,emptypin,emptypin,emptypin,

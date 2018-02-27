@@ -138,7 +138,7 @@ package PIN_7I77_7I85SP_34 is
 		IOPortTag & x"01" & PWMTag & PWMBDirPin, 							-- I/O 07	PIN 17   PIN 8	
 		IOPortTag & x"00" & PWMTag & PWMAOutPin, 							-- I/O 08	PIN 5    PIN 9	
 		IOPortTag & x"00" & PWMTag & PWMBDirPin,							-- I/O 09	PIN 6    PIN 11
-		IOPortTag & x"04" & MuxedQCountSelTag & MuxedQCountSel0Pin,	-- I/O 10	PIN 7    PIN 13
+		IOPortTag & x"06" & MuxedQCountSelTag & MuxedQCountSel0Pin,	-- I/O 10	PIN 7    PIN 13
 		IOPortTag & x"03" & MuxedQCountTag & MuxedQCountQAPin,		-- I/O 11	PIN 8    PIN 15
 		IOPortTag & x"03" & MuxedQCountTag & MuxedQCountQBPin,		-- I/O 12	PIN 9    PIN 17
 		IOPortTag & x"03" & MuxedQCountTag & MuxedQCountIDXPin,		-- I/O 13	PIN 10   PIN 19

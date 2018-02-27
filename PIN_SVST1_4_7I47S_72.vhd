@@ -107,15 +107,15 @@ package PIN_SVST1_4_7I47S_72 is
 			
 	constant PinDesc : PinDescType :=(
 -- 	Base func  sec unit sec func 	 sec pin		
-		IOPortTag & x"00" & StepGenTag & StepGenStepPin,	-- I/O 00
-		IOPortTag & x"00" & StepGenTag & StepGenDirPin,		-- I/O 01	
-		IOPortTag & x"01" & StepGenTag & StepGenStepPin,	-- I/O 02		
-		IOPortTag & x"01" & StepGenTag & StepGenDirPin,		-- I/O 03		
-		IOPortTag & x"00" & QCountTag & QCountQAPin,			-- I/O 04		
+		IOPortTag & x"00" & StepGenTag & StepGenStepPin,	-- I/O 00  TX4
+		IOPortTag & x"00" & StepGenTag & StepGenDirPin,		-- I/O 01  TX5	
+		IOPortTag & x"01" & StepGenTag & StepGenStepPin,	-- I/O 02  TX6		
+		IOPortTag & x"01" & StepGenTag & StepGenDirPin,		-- I/O 03  TX7		
+		IOPortTag & x"00" & QCountTag & QCountQAPin,			-- I/O 04  RX0		
 		IOPortTag & x"02" & QCountTag & QCountQAPin,			-- I/O 05		
-		IOPortTag & x"00" & QCountTag & QCountQBPin,			-- I/O 06			
+		IOPortTag & x"00" & QCountTag & QCountQBPin,			-- I/O 06  RX1			
 		IOPortTag & x"02" & QCountTag & QCountQBPin,			-- I/O 07		
-		IOPortTag & x"00" & QCountTag & QCountIDXPin,		-- I/O 08		
+		IOPortTag & x"00" & QCountTag & QCountIDXPin,		-- I/O 08  RX2		
 		IOPortTag & x"02" & QCountTag & QCountIDXPin,		-- I/O 09
 		IOPortTag & x"01" & QCountTag & QCountQAPin,			-- I/O 10
 		IOPortTag & x"03" & QCountTag & QCountQAPin,			-- I/O 11
@@ -127,16 +127,12 @@ package PIN_SVST1_4_7I47S_72 is
 		IOPortTag & x"00" & PWMTag  & PWMBDirPin,				-- I/O 17 7I47S DIRECTION	
 		IOPortTag & x"00" & PWMTag  & PWMCEnaPin,				-- I/O 18 7I47S PWMENABLE			
 		IOPortTag & x"00" & PWMTag  & PWMAOutPin,				-- I/O 19 7I47S PWMOUT	
-		IOPortTag & x"02" & StepGenTag & StepGenStepPin,	-- I/O 20			
-		IOPortTag & x"02" & StepGenTag & StepGenDirPin,		-- I/O 21
-		IOPortTag & x"03" & StepGenTag & StepGenStepPin,	-- I/O 22			
-		IOPortTag & x"03" & StepGenTag & StepGenDirPin,		-- I/O 23
+		IOPortTag & x"02" & StepGenTag & StepGenStepPin,	-- I/O 20  TX0		
+		IOPortTag & x"02" & StepGenTag & StepGenDirPin,		-- I/O 21  TX1
+		IOPortTag & x"03" & StepGenTag & StepGenStepPin,	-- I/O 22  TX2			
+		IOPortTag & x"03" & StepGenTag & StepGenDirPin,		-- I/O 23  TX3
 
-
-
-
-					
-					
+				
 		IOPortTag & x"00" & NullTag & x"00",					-- I/O 24
 		IOPortTag & x"00" & NullTag & x"00",					-- I/O 25
 		IOPortTag & x"00" & NullTag & x"00",					-- I/O 26

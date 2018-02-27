@@ -144,7 +144,6 @@ entity TopSSremote is -- for 7I90HD/7I90DB
 		TheModuleID: ModuleIDType := ModuleID;
 		PWMRefWidth: integer := 13;	-- PWM resolution is PWMRefWidth-1 bits 
 		IDROMType: integer := 3;		
-		UseStepGenPrescaler : boolean := true;
 		UseIRQLogic: boolean := true;
 		UseWatchDog: boolean := true;
 		OffsetToModules: integer := 64;
@@ -261,6 +260,9 @@ signal LoadPktUARTRModeRegM : std_logic;
 signal ReadPktUARTRModeRegM : std_logic;
 signal LoadPktUARTRModeRegH : std_logic;
 signal ReadPktUARTRModeRegH : std_logic;
+signal LoadPktUARTRFilterReg : std_logic;
+signal ReadPktUARTRFilterReg : std_logic;
+
 -- TX UART signals
 signal LoadPktUARTTData : std_logic;
 signal LoadPktUARTTFrameCount : std_logic;
@@ -324,7 +326,6 @@ ahostmot2: entity work.HostMot2
 		idromtype  => IDROMType,		
 	   sepclocks  => SepClocks,
 		onews  => OneWS,
-		usestepgenprescaler => UseStepGenPrescaler,
 		useirqlogic  => UseIRQLogic,
 		pwmrefwidth  => PWMRefWidth,
 		usewatchdog  => UseWatchDog,
@@ -520,7 +521,9 @@ ahostmot2: entity work.HostMot2
 
 
 	apktuartrx8: entity work.pktuartr8
-	generic map (MaxFrameSize => 64) 		-- in bytes (-1) maximum is 64 bytes
+			generic map (
+				MaxFrameSize => 64,
+				Clock => ClockLow	)
 	port map (
 			clk => procclk,
 			ibus => mobus,
@@ -539,6 +542,8 @@ ahostmot2: entity work.HostMot2
 			readmodem => ReadPktUARTRModeRegM,
 			loadmodeh => LoadPktUARTRModeRegH,
 			readmodeh => ReadPktUARTRModeRegH,
+			loadfilter => LoadPktUARTRFilterReg,
+			readfilter => ReadPktUARTRFilterReg,
 			rxmask => PTXEn,
 			rxdata => RXDATA
 			);
@@ -648,6 +653,18 @@ ahostmot2: entity work.HostMot2
 			LClearCRC<= '1';
 		else
 			LClearCRC<= '0';		
+		end if;	
+
+		if wseladd = x"27" and wiosel = '1'then
+			LoadPktUARTRFilterReg <= '1';
+		else
+			LoadPktUARTRFilterReg <= '0';		
+		end if;	
+
+		if rseladd = x"27" and riosel = '1'then
+			ReadPktUARTRFilterReg <= '1';
+		else
+			ReadPktUARTRFilterReg <= '0';		
 		end if;	
 		
 		if rseladd = x"28" and riosel = '1' then
@@ -810,6 +827,12 @@ ahostmot2: entity work.HostMot2
 			ReadPktUARTTModeRegH <= '1';
 		else
 			ReadPktUARTTModeRegH <= '0';		
+		end if;	
+
+		if wseladd = x"38" and wiosel = '1'then
+			LoadPktUARTRFilterReg <= '1';
+		else
+			LoadPktUARTRFilterReg <= '0';		
 		end if;	
 
 		if wseladd = x"3C" and wiosel = '1' and mwrite = '1'then

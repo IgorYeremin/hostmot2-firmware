@@ -76,16 +76,16 @@ use work.IDROMConst.all;
 
 
 -------------------- select one card type------------------------------
-use work.@Card@.all;
+--use work.@Card@.all;
 --use work.i20card.all;					-- needs 5i20.ucf and SP2 200K 208 pin
---use work.i65card.all;					-- needs 4i65.ucf and SP2 200K 208 pin
+use work.i65card.all;					-- needs 4i65.ucf and SP2 200K 208 pin
 
 -----------------------------------------------------------------------
 
 
 -------------------- select (or add) one pinout ---------------------------------
-use work.@Pin@.all;
-
+--use work.@Pin@.all;
+use work.PIN_SVSmithy_72.all;
 --use work.PIN_SVST8_4IM2_72.all;
 --use work.PIN_SVST8_4_72.all;
 --use work.PIN_SVST6_6_7I48_72.all;
@@ -107,9 +107,8 @@ use work.@Pin@.all;
 --use work.PIN_SVST6_1_72.all;
 --use work.PIN_SV6_7I52S_72.all;
 --use work.PIN_SVST1_4_7I47DA_72.all;
---use work.PIN_7I65_7I44_72.all;
+--use work.PIN_SVST12_12_7I52S_72.all;
 --use work.PIN_7I77_72.all;			-- 7i77 with adapter
---use work.PIN_SV4_7I47S_72.all;
 
 -- custom and specials
 --use work.PIN_SS8_72.all;
@@ -129,8 +128,10 @@ use work.@Pin@.all;
 --use work.PIN_SV6_7I49_72.all; -- no fit without high magic
 --use work.PIN_SVST2_8_GREG_72.all;
 --use work.PIN_SVST6_6_RUDY_72.all;
+--use work.PIN_SV_4LA_7I47S_72.all;
 --use work.PIN_SVST6_4_7I52S_72.all;
---use work.PIN_SVSTSS5_4_3_72.all;
+--use work.PIN_SSSV2_12_7i53_72.all;
+
 ------------------------------------------------------------------------
 	
 	
@@ -143,7 +144,6 @@ entity Top9030HostMot2 is -- for 5I20 and 4I65 PCI 9030 based cards
 		TheModuleID: ModuleIDType := ModuleID;
 		PWMRefWidth: integer := 13;	-- PWM resolution is PWMRefWidth-1 bits 
 		IDROMType: integer := 3;		
-		UseStepGenPrescaler : boolean := true;
 		UseIRQLogic: boolean := true;
 		UseWatchDog: boolean := true;
 		OffsetToModules: integer := 64;
@@ -289,7 +289,6 @@ ahostmot2: entity HostMot2
 		idromtype  => IDROMType,		
 	   sepclocks  => SepClocks,
 		onews  => OneWS,
-		usestepgenprescaler => UseStepGenPrescaler,
 		useirqlogic  => UseIRQLogic,
 		pwmrefwidth  => PWMRefWidth,
 		usewatchdog  => UseWatchDog,

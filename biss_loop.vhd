@@ -88,6 +88,8 @@ entity biss is
 		lifohasdata : out std_logic;
 		busyout: out std_logic;
 		davout: out std_logic; 
+		testdata: out std_logic;
+		sampletime: out std_logic;
 		bissclk : out std_logic;
       bissdata : in std_logic
 		);
@@ -100,8 +102,7 @@ architecture Behavioral of biss is
 
 constant DDSWidth : integer := 16; -- 16 max
 constant BitLength : integer := 10; -- limited by SLR16 x 32 bits wide so 512 bits 
-
-signal TestData : std_logic_vector(255 downto 0) := x"FFA0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABC";
+constant TestDataConst : std_logic_vector(31 downto 0) := x"AABCD123";
 signal BitLengthReg : std_logic_vector(BitLength-1 downto 0);
 signal BitCount : std_logic_vector(BitLength-1 downto 0);
 signal BitrateDDSReg : std_logic_vector(DDSWidth-1 downto 0);
@@ -117,10 +118,8 @@ signal OldXmitDDSMSB: std_logic;
 signal RecvDDSAccum : std_logic_vector(DDSWidth-1 downto 0);
 alias  RecvDDSMSB : std_logic is RecvDDSAccum(DDSWidth-1);
 signal OldRecvDDSMSB : std_logic;  
-signal SampleTime: std_logic; 
-signal TestXmitTime : std_logic;
-signal TestDataSR : std_logic_vector(255 downto 0);
-signal XmitClockStop : std_logic; 
+signal RXSampleTime: std_logic; 
+signal XmitClockRE : std_logic; 
 signal BISSDataD : std_logic; 
 signal BISSDataPipe: std_logic_vector(2 downto 0); 
 
@@ -141,6 +140,10 @@ signal StartReq2: std_logic := '0';
 signal PopReq: std_logic := '0';
 signal PopReq1: std_logic := '0';
 signal PopReq2: std_logic := '0';
+
+-- test signals
+signal SampleToggle: std_logic;
+signal TestDataSR: std_logic_vector(31 downto 0);
 
 -- LIFO related signals
 	signal PushData: std_logic_vector(31 downto 0);
@@ -215,8 +218,10 @@ begin
 
 		
 	asimplebiss: process (clk, StartReq2, StartReq1, PopReq2, PopReq1, OldRecvDDSMSB, BISSDataPipe,
-                      	RecvDDSAccum, OldXmitDDSMSB, XmitDDSAccum, DGo, BitPointer, SampleTime,
-								DataCounter, SyncDAV, poplifo, PopData, llifoempty,hclk, readcontrol0,Readcontrol1 )
+                      	RecvDDSAccum, OldXmitDDSMSB, XmitDDSAccum, DGo, BitPointer, RXSampleTime,
+								DataCounter, SyncDAV, poplifo, PopData, llifoempty,hclk, readcontrol0,Readcontrol1,
+								Timer,Timers,TimerSelect,BitLengthReg,FilterTimeReg,BitRateDDSReg,PstartMask,
+								TStartMask,RGo,XGo)
 	begin
 		if rising_edge(hclk) then
 			
@@ -240,23 +245,23 @@ begin
 			
  			BISSDataPipe <= BISSDataPipe(1 downto 0) & FilteredBISSData;  		-- Two stage rx data pipeline to compensate for
 																									-- two clock delay from start bit detection to acquire loop startup
-			OldBitPointerMSB <= BitPointerMSB;
+--			OldBitPointerMSB <= BitPointerMSB;
 			if XGo = '1' then 
+				if XmitClockRE = '1' then
+					TestDataSR <= TestDataSR(30 downto 0) & TestDataSR(31);
+				end if;		
 				XmitDDSAccum <= XmitDDSAccum + BitRateDDSReg;	-- start clock
-				if TestXmitTime = '1' then
-					TestDataSR <= TestDataSR(254 downto 0) & '1'; -- shift left
-				end if;	
 				if RGo = '1' then							-- RGo means we detected start bit
 					RecvDDSAccum <= RecvDDSAccum + BitRateDDSReg;
-					if SampleTime = '1' then					
+					if RXSampleTime = '1' then					
 						if BitCount = 0 then
 							RGo <= '0';						-- done with receive
 							DAV <= '1';
-							TestDataSR <= TestData;
 						else
 							if DGo = '1' and RGo = '1' then
 								BitCount <= BitCount -1;
 								BitPointer <= BitPointer -1;
+								SampleToggle <= not SampleToggle;
 							end if;	
 						end if;	
 						DGo <= '1';							-- data starts 1 bit after start bit			
@@ -265,13 +270,15 @@ begin
 			else
 				XmitDDSAccum <= (others => '0'); 
 				RecvDDSAccum <= (others => '0'); 			
+				SampleToggle <= '0';
+				TestDataSR <= TestDataConst;
 			end if;
 			
 			if (RGo = '0') and (DGo = '0') and (BISSDataPipe(0) = '1') and (BISSDataPipe(1)= '0') then	-- start bit detection
 				RGo <= '1';
 			end if;	
 
-			if (RGo = '0') and (BitCount = 0) and (XmitClockStop = '1') then	--stop xmit clock synchronously
+			if (RGo = '0') and (BitCount = 0) and (XmitClockRE = '1') then	--stop xmit clock synchronously
 				DGo <= '0';
 				XGo <= '0';
 			end if;	
@@ -300,7 +307,6 @@ begin
 			if (StartReq2 and StartReq1) = '1' then
 				BitCount <= BitLengthReg;
 				BitPointer <= BitLengthReg(4 downto 0); --5 bit remainder
-				TestDataSR <= TestData; 
 				XGo <= '1';
 				RGo <= '0';
 				DGo <= '0';
@@ -309,9 +315,9 @@ begin
 			
 		end if; -- hclk
 		
-		PushBit <= OneOfNDecode(32,DGo,SampleTime,BitPointer);
+		PushBit <= OneOfNDecode(32,DGo,RXSampleTime,BitPointer);
 
-		if (BitPointer = "00001") and (DGo = '1') and (SampleTime = '1') then
+		if (BitPointer = "00001") and (DGo = '1') and (RXSampleTime = '1') then
 			Push <= '1';
 		else
 			Push <= '0';
@@ -367,7 +373,7 @@ begin
 			when "010" => Timer <= timers(2);
 			when "011" => Timer <= timers(3);
 			when "100" => Timer <= timers(4);	
-			when others => null;
+			when others => Timer <= Timers(0);
 		end case;	
 		
 		if StartReq2 = '1' then 
@@ -379,9 +385,8 @@ begin
 		end if;		
 		
 		
-		SampleTime <= (not OldRecvDDSMSB) and RecvDDSMSB;			-- sample on rising edge of DDS MSB, that is 1/2 cycle from edge
-		XmitClockStop  <= OldXmitDDSMSB and (not XmitDDSMSB); 	-- stop xmit clock in idle state
-		TestXmitTime <= (not OldXmitDDSMSB) and XmitDDSMSB;			-- test data xmit time
+		RXSampleTime <= (not OldRecvDDSMSB) and RecvDDSMSB;			-- sample on rising edge of DDS MSB, that is 1/2 cycle from edge
+		XmitClockRE  <= OldXmitDDSMSB and (not XmitDDSMSB); 			-- stop xmit clock in idle state
 
 		obus <= (others => 'Z');
 		if	readcontrol0 =  '1' then
@@ -397,7 +402,7 @@ begin
 			obus(9)	<= TstartMask;
 			obus(10) <= RGo;
 			obus(11) <= '0';
-			obus(14 downto 12) <=	TimerSelect;
+			obus(14 downto 12) <= TimerSelect;
 			obus(15) <= SyncDAV;
 			obus(31 downto 16) <= (others => '0');
 		end if;
@@ -409,8 +414,9 @@ begin
 		lifohasdata <= not llifoempty;
 		bissclk <= 	not XmitDDSMSB;
 		busyout <= XGo or not SyncDAV;
---		davout <= SyncDAV;
-		davout <= TestDataSR(255);
+		davout <= SyncDAV;
+		sampletime <= SampleToggle;
+		testdata <= TestDataSR(31);
 	end process asimplebiss;
 	
 end Behavioral;

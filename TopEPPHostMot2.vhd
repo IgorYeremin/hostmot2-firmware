@@ -76,7 +76,7 @@ use work.IDROMConst.all;
 
 
 -------------------- select one card type------------------------------
---use work.@Card@.all;
+use work.@Card@.all;
 --use work.i43_200card.all; 	-- needs 7i43.ucf and SP3 200K 144 pin
 --use work.i43_400card.all;   -- needs 7i43.ucf and SP3 400K 144 pin
 --use work.i61_x16card.all;   	-- needs 7i61p.ucf and SP6 x16 256 pin
@@ -85,9 +85,10 @@ use work.IDROMConst.all;
 
 
 -------------------- select (or add) one pinout -----------------------
---use work.@PIN@.all;
+use work.@Pin@.all;
 -- 48 I/O pinouts for 7I43:
 --use work.PIN_SV8_48.all;
+--use work.PIN_SV6_7I52S_48.all;
 --use work.PIN_SVSPD6_2_48.all;
 --use work.PIN_SPSVST_7I47_7I65_48.all;
 --use work.PIN_SVSP6_2_48.all;
@@ -100,7 +101,7 @@ use work.IDROMConst.all;
 --use work.PIN_SVUA4_8_48.all;
 --use work.PIN_SVSS4_8_48.all; -- 400K only
 --use work.PIN_SVSS4_4_48.all;
---use work.PIN_SVSS6_6_48.all; -- 400K only
+--use work.PIN_SVSS6_6_48.all; -- 400K only (fits 200k with area optimization
 --use work.PIN_SVSS6_4_48.all;
 --use work.PIN_SVTW4_24_24_48.all ;
 --use work.PIN_SVTP4_7I39_48.all;
@@ -147,7 +148,6 @@ entity TopEPPHostMot2 is -- for 7I43 or 7I61 in EPP mode
 		TheModuleID: ModuleIDType := ModuleID;
 		PWMRefWidth: integer := 13;	-- PWM resolution is PWMRefWidth-1 bits 
 		IDROMType: integer := 3;		
-		UseStepGenPrescaler : boolean := true;
 		UseIRQLogic: boolean := false;
 		UseWatchDog: boolean := true;
 		OffsetToModules: integer := 64;
@@ -245,7 +245,6 @@ ahostmot2: entity work.HostMot2
 		idromtype  => IDROMType,		
 	   sepclocks  => SepClocks,
 		onews  => OneWS,
-		usestepgenprescaler => UseStepGenPrescaler,
 		useirqlogic  => UseIRQLogic,
 		pwmrefwidth  => PWMRefWidth,
 		usewatchdog  => UseWatchDog,
