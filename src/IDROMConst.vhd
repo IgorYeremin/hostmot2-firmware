@@ -466,7 +466,8 @@ package IDROMConst is
 		constant	StepGenTable6Pin : std_logic_vector(7 downto 0) := x"87";
 		constant	StepGenTable7Pin : std_logic_vector(7 downto 0) := x"88";
 		constant	StepGenIndexPin  : std_logic_vector(7 downto 0) := x"01";
-		constant	StepGenProbePin  : std_logic_vector(7 downto 0) := x"02";		
+		constant	StepGenProbePin  : std_logic_vector(7 downto 0) := x"02";	
+		constant	StepGenTestAccumPin :  std_logic_vector(7 downto 0) := x"04";	
 
 	constant PWMTag : std_logic_vector(7 downto 0) := x"06";
 		constant PWMAOutPin : std_logic_vector(7 downto 0) := x"81";

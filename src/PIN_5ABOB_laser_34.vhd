@@ -69,6 +69,20 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 use work.IDROMConst.all;
 
+--type ModuleRecord is 							-- probably need an alternate way for smart modules
+--	record	
+--		GTag : std_logic_vector(7 downto 0);		
+--		Version : std_logic_vector(7 downto 0);	
+--		Clock : std_logic_vector(7 downto 0);
+--		NumInstances : std_logic_vector(7 downto 0);
+--		BaseAddr : std_logic_vector(15 downto 0);
+--		NumRegisters : std_logic_vector(7 downto 0);
+--		Strides : std_logic_vector(7 downto 0);
+--		MultRegs : std_logic_vector(31 downto 0);
+--	end record; 
+--	type ModuleIDType is array(0 to MaxModules-1) of ModuleRecord;
+
+
 package PIN_5ABOB_laser_34 is
 	constant ModuleID : ModuleIDType :=( 
 		(WatchDogTag,	x"00",	ClockLowTag,	x"01",	WatchDogTimeAddr&PadT,		WatchDogNumRegs,		x"00",	WatchDogMPBitMask),
@@ -105,6 +119,7 @@ package PIN_5ABOB_laser_34 is
 		(NullTag,		x"00",	NullTag,			x"00",	NullAddr&PadT,					x"00",					x"00",	x"00000000")
 		);
 		
+	--type PinDescType is array(0 to MaxPins -1) of std_logic_vector(31 downto 0);
 	
 	constant PinDesc : PinDescType :=(
 -- 	Base func  sec unit sec func 	 sec pin					-- external DB25
@@ -121,7 +136,7 @@ package PIN_5ABOB_laser_34 is
 		IOPortTag & x"02" & StepGenTag & StepGenDirPin,		-- I/O 10	PIN 7		Z Dir
 		IOPortTag & x"00" & PktUARTTTag & PktUTDataPin,		-- I/O 11	PIN 8		Pkt UART TX
 		IOPortTag & x"00" & PktUARTRTag & PktURDataPin,		-- I/O 12	PIN 9		Pkt UART RX
-		IOPortTag & x"00" & NullTag & NullPin,					-- I/O 13	PIN 10	Input 1 just GPIO
+		IOPortTag & x"00" & StepGenTag & StepGenTestAccumPin,					-- I/O 13	PIN 10	X accum LSB
 		IOPortTag & x"00" & QCountTag & QCountQAPin,  		-- I/O 14	PIN 11	Input 2 (Quad A)
 		IOPortTag & x"00" & QCountTag & QCountQBPin,  		-- I/O 15	PIN 12	Input 3 (Quad B)
 		IOPortTag & x"00" & QCountTag & QCountIdxPin,    	-- I/O 16	PIN 13	Input 4 (Quad Idx)

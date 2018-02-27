@@ -101,7 +101,8 @@ entity stepgen is
 			  readtablemax : in std_logic;	
            basicrate : in std_logic;
            hold : in std_logic;
-           stout : out std_logic_vector(tablewidth-1 downto 0)
+           stout : out std_logic_vector(tablewidth-1 downto 0);
+			  stepaccumout: out std_logic_vector(asize-rsize-1 downto 0)
           );
 end stepgen;
 
@@ -181,6 +182,9 @@ begin
 							 dirsetupwait, pulsewidthcount, dirshcount, dirhold, waitforhold,
 							 readaccum, tabledata, stepmode, steppulse, stepmsbs,localout)
 	begin
+	
+		stepaccumout(asize-rsize-1 downto 0) <= stepaccum(asize-1 downto rsize);
+	
 		if rising_edge(clk) then
 
 			if basicrate = '1' and hold = '0' and ddshold = '0' then	 			-- our basic step rate DDS

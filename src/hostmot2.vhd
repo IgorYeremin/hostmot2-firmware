@@ -210,6 +210,11 @@ constant InMWidth: InMWidthType :=(
  
 -- extract the needed Stepgen table width from the max pin# used with a stepgen tag
 constant StepGenTableWidth: integer := MaxPinsPerModule(ThePinDesc,StepGenTag);
+-- How many bits wide the integer portion of stepgen is (I think?)
+constant StepgenRsizeWidth: integer := 32;
+constant StepgenAsizeWidth: integer := 48;
+
+
 	-- extract how many BSPI CS pins are needed
 constant BSPICSWidth: integer := CountPinsInRange(ThePinDesc,BSPITag,BSPICS0Pin,BSPICS7Pin);
 	-- extract how many DBSPI CS pins are needed
@@ -596,6 +601,8 @@ constant UseStepgenProbe: boolean := PinExists(ThePinDesc,StepGenTag,StepGenProb
 	type StepGenOutType is array(StepGens-1 downto 0) of std_logic_vector(StepGenTableWidth-1 downto 0);
 	signal StepGenOut : StepGenOutType;
 	signal StepGenIndex: std_logic_vector(StepGens -1 downto 0);
+	type StepGenAccumType is array(StepGens-1 downto 0) of std_logic_vector(StepgenAsizeWidth-StepgenRsizeWidth-1 downto 0);
+	signal StepGenAccum : StepGenAccumType;
 -- Step generator related signals
 
 	signal StepGenRateSel: std_logic;
@@ -656,8 +663,8 @@ constant UseStepgenProbe: boolean := PinExists(ThePinDesc,StepGenTag,StepGenProb
 					buswidth => BusWidth,
 					timersize => 14,			-- = ~480 usec at 33 MHz, ~320 at 50 Mhz 
 					tablewidth => StepGenTableWidth,
-					asize => 48,
-					rsize => 32 
+					asize => StepgenAsizeWidth,
+					rsize => StepgenRsizeWidth 
 					)
 				port map (
 					clk => clklow,
@@ -683,7 +690,8 @@ constant UseStepgenProbe: boolean := PinExists(ThePinDesc,StepGenTag,StepGenProb
 					readtablemax => ReadStepGenTableMax(i),
 					basicrate => StepGenBasicRate,
 					hold => '0',
-					stout => StepGenOut(i)
+					stout => StepGenOut(i),
+					stepaccumout =>StepGenAccum(i)
 					);
 				end generate usg;
 		
@@ -918,6 +926,8 @@ constant UseStepgenProbe: boolean := PinExists(ThePinDesc,StepGenTag,StepGenProb
 							StepGenIndex(conv_integer(ThePinDesc(i)(23 downto 16))) <= IOBits(i);
 						when StepGenProbePin =>
 							Probe <= IOBits(i);	-- only 1 please!
+						when StepGenTestAccumPin =>
+							StepgenAccum(conv_integer(ThePinDesc(i)(23 downto 16)))(0) <= IOBits(i); --Send bit 0 (LSB of integer part (??)) to IOBit
 						when others => null;
 					end case;
 				end if;
